@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<html>
+    <head>
+        <title>HelloTester</title>
+        <!-- Bootstrap -->
+        <link href="css/bootstrap.min.css" rel="stylesheet">
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    </head>
+    <body>
+        <script src="js/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>
+        <script type="text/javascript"> 
+            function addJobRecord(i,jrec) {
+                job_status      = jrec.status;
+                job_date        = jrec.date;
+                job_description = jrec.description
+                out_files       = jrec.output_files
+                
+                $('#jobRecords').append(
+                    '<tr data-toggle="collapse" data-target="#jrec'+i+'" class="accordion-toggle">'
+                   +'  <td style="text-align: center;">'
+                   +'     <button class="btn btn-default btn-xs">'
+                   +'     <span class="glyphicon glyphicon-eye-open"></span>'
+                   +'     </button>'
+                   +'  </td>'
+                   +'  <td style="text-align: center;">'+job_date+'</td>'
+                   +'  <td style="text-align: center;">'+job_status+'</td>'
+                   +'  <td style="text-align: center;">'+job_description+'</td>'
+                   +'</tr>'
+                   +'<tr>'
+                   +'  <td colspan="12" class="hiddenRow">'
+                   +'    <div class="accordian-body collapse" id="jrec'+i+'">'
+                   +'    <table class="table table-striped" id="jout_table'+i+'">'
+                   +'      <thead>'+
+                 //+'        <tr><th>Output</th></tr>'                  
+                   +'      </thead>'
+                   +'      <tbody id="joutput'+i+'">'                   
+                   +'      </tbody>'
+                   +'    </table>'
+                   +'    </div>'
+                   +'  </td>'
+                   +'</tr>');
+                   // Add output files
+                   for (var j = 0; j < out_files.length; j++) { 
+                        $('#joutput'+i).append(
+                          '<tr><td><a href="http://localhost:7777/v1.0/'
+                          +out_files[j].url+'">'
+                          +out_files[j].name+'</a></td></tr>');
+                    }
+            }
+            function fillJobTable(data) {
+                for (var i = 0; i < data.length; i++) {
+                    addJobRecord(i,data[i])
+                }
+            }            
+            function prepareJobTable() {                
+                $.ajax({
+                    type: "GET", 
+                    url: "http://localhost:7777/v1.0/tasks?user=brunor&app_id=1", 
+                    success: function(data) {
+                            fillJobTable(data);             
+                        }, 
+                    error: function(jqXHR, textStatus, errorThrown) {
+                            alert(jqXHR.status);
+                        },
+                   dataType: "json"
+               });
+            }
+            function getNumJobs() {
+                return $('#jobRecords table').size();
+            }
+            function submit() {
+                $('#submitButton').hide();
+                job_failed ='<div class="alert alert-danger">'
+                           +'<strong>ERROR!</strong> Failed to submit job.'
+                           +'</div>';
+                job_success='<div class="alert alert-success">'
+                            +'<strong>Success!</strong> Job successfully sent.'
+                            +'</div>';
+                job_warning='<div class="alert alert-warning">'
+                            +'<strong>WARNING!</strong> Unable to get job details.'
+                            +'</div>';
+                job_description = $('#jobDescription').val();
+                $('#modal-content').html('');
+                //jrec = { 'status': 'SUBMITTED'
+                //        ,'date'  : '2015-10-25 22:39:27'
+                //        ,'description' : job_description
+                //       };
+                // 1st call to register job                
+                $.ajax({
+                    url: "http://localhost:7777/v1.0/tasks?user=brunor",
+                    type: "POST", 
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    data: JSON.stringify({ application: "1"
+                                          , description: job_description
+                                          , output_files: []                                
+                                         }),                          
+                    success: function(data) {
+                            // 2nd call finalize and start submission                                                        
+                            $.ajax({
+                                url: "http://localhost:7777/v1.0/tasks/"+data.id+"/input?user=brunor",
+                                type: "POST", 
+                                dataType: "json",
+                                contentType: "application/json; charset=utf-8",
+                                data: JSON.stringify({}),
+                                success: function(data) {
+                                        // 3rd Job submitted, retrieve info                                        
+                                        $.ajax({                                            
+                                            url: "http://localhost:7777/v1.0/tasks/"+data.task+"?user=brunor",
+                                            type: "GET", 
+                                            success: function(data) {
+                                                    // 4th Retrieving job info
+                                                    $('#modal-content').html(job_success);
+                                                    addJobRecord(getNumJobs(),data);
+                                                }, 
+                                            error: function(jqXHR, textStatus, errorThrown) {
+                                                    $('#modal-content').html(job_warning);
+                                                    alert(jqXHR.status);
+                                                }
+                                        });
+                                    }, 
+                                error: function(jqXHR, textStatus, errorThrown) {
+                                        $('#modal-content').html(job_failed);
+                                        alert(jqXHR.status);
+                                    }
+                            });
+                        }, 
+                    error: function(jqXHR, textStatus, errorThrown) {
+                            $('#modal-content').html(job_failed);
+                            alert(jqXHR.status);
+                        }                   
+                });                                
+            }
+            function openModal() {
+                var currentdate = new Date(); 
+                var datetime = currentdate.getDate() + "/"
+                             +(currentdate.getMonth()+1)  + "/" 
+                             + currentdate.getFullYear() + " @ "  
+                             + currentdate.getHours() + ":"  
+                             + currentdate.getMinutes() + ":" 
+                             + currentdate.getSeconds();
+                $('#submitButton').show();
+                $('#modal-content').html('');                
+                $('#jobDescription').val('Helo tester job desc '+datetime);
+                $("#helloTesterModal").modal();
+            }
+            // Initialize page
+            $( document ).ready(function() {
+                prepareJobTable();
+            });
+        </script>
+        <div class="panel panel-default">
+        <div class="panel-heading"><h3>HelloTester web application</h3></div>
+        <div class="panel-body">
+        
+        <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">Launch Hello tester job</button>
+        <hr>
+        <table id="submitRecords" class="table table-condensed" style="border-collapse:collapse;"
+               data-sort-name="date" data-sort-order="desc">        
+            <thead>
+            <tr><th>&nbsp;</th>
+                <th data-field="date"        data-align="center" data-sortable="true" style="text-align: center;">Date</th>
+                <th data-field="status"      data-align="center" data-sortable="true" style="text-align: center;">Status</th>
+                <th data-field="description" data-align="left"   data-sortable="true" style="text-align: center;">Description</th>                
+            </tr>
+            </thead>
+            <tbody id="jobRecords">                
+            </tbody>
+        </table>
+        </div>        
+        </div>                 
+        <!-- Modal (begin) -->
+        <div class="modal fade" id="helloTesterModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">          
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Hello tester submission pane</h4>
+              </div>
+              <div class="modal-body">
+                <p>Welcome to the 1st web application testing the new FutureGateway APIs.</p>
+                <p>This application just execute over SSH a simple hostname command.</p>
+                <p>Please press <b>'submit'</b> button to execute the 'Hello' application.</p>
+                <p>Press cancel to return to the Hello' home/summary page.</p>
+                <center>
+                <b>Specify your job identifier below</b>                
+                <input type="text" id="jobDescription" size="60"/>
+                <br/>
+                <div class="modal-content" id="modal-content">                 
+                </div>                
+                </center>
+              </div>
+              <div class="modal-footer">
+                <center>                
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onClick="submit()" id="submitButton">Submit</button>
+                </center>
+              </div>
+            </div>
+          </div>
+        </div>   
+        <!-- Modal (end) -->
+    </body>    
+</html>
+
+
