@@ -96,17 +96,19 @@ and open the template in the editor.
                 $.ajax({
                     url: "http://localhost:7777/v1.0/tasks?user=brunor",
                     type: "POST", 
+                    cache: false,
                     dataType: "json",
                     contentType: "application/json; charset=utf-8",
                     data: JSON.stringify({ application: "1"
                                           , description: job_description
-                                          , output_files: []                                
+                                          , output_files: []                                          
                                          }),                          
                     success: function(data) {
                             // 2nd call finalize and start submission                                                        
                             $.ajax({
                                 url: "http://localhost:7777/v1.0/tasks/"+data.id+"/input?user=brunor",
                                 type: "POST", 
+                                cache: false,
                                 dataType: "json",
                                 contentType: "application/json; charset=utf-8",
                                 data: JSON.stringify({}),
@@ -115,6 +117,7 @@ and open the template in the editor.
                                         $.ajax({                                            
                                             url: "http://localhost:7777/v1.0/tasks/"+data.task+"?user=brunor",
                                             type: "GET", 
+                                            cache: false,
                                             success: function(data) {
                                                     // 4th Retrieving job info
                                                     $('#modal-content').html(job_success);
