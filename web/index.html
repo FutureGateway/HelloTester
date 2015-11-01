@@ -11,66 +11,109 @@ and open the template in the editor.
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/jquery.min.js"></script>
+        <script src="js/bootstrap.min.js"></script>        
+        <script src="js/jquery.tablesorter.mod.js"></script>          
     </head>
     <body>
-        <script src="js/jquery.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>
+        
         <script type="text/javascript"> 
             function addJobRecord(i,jrec) {
                 job_status      = jrec.status;
                 job_date        = jrec.date;
-                job_description = jrec.description
-                out_files       = jrec.output_files
+                job_description = jrec.description;
+                out_files       = jrec.output_files;
                 
-                $('#jobRecords').append(
-                    '<tr data-toggle="collapse" data-target="#jrec'+i+'" class="accordion-toggle">'
-                   +'  <td style="text-align: center;">'
-                   +'     <button class="btn btn-default btn-xs">'
-                   +'     <span class="glyphicon glyphicon-eye-open"></span>'
-                   +'     </button>'
-                   +'  </td>'
-                   +'  <td style="text-align: center;">'+job_date+'</td>'
-                   +'  <td style="text-align: center;">'+job_status+'</td>'
-                   +'  <td style="text-align: center;">'+job_description+'</td>'
-                   +'</tr>'
-                   +'<tr>'
-                   +'  <td colspan="12" class="hiddenRow">'
-                   +'    <div class="accordian-body collapse" id="jrec'+i+'">'
-                   +'    <table class="table table-striped" id="jout_table'+i+'">'
-                   +'      <thead>'+
-                 //+'        <tr><th>Output</th></tr>'                  
-                   +'      </thead>'
-                   +'      <tbody id="joutput'+i+'">'                   
-                   +'      </tbody>'
-                   +'    </table>'
-                   +'    </div>'
-                   +'  </td>'
-                   +'</tr>');
-                   // Add output files
-                   for (var j = 0; j < out_files.length; j++) { 
-                        $('#joutput'+i).append(
-                          '<tr><td><a href="http://localhost:7777/v1.0/'
-                          +out_files[j].url+'">'
-                          +out_files[j].name+'</a></td></tr>');
-                    }
+                var OutFiles ='';
+                for (var j = 0; j < out_files.length; j++) {
+                    // Show only file entries of DONE jobs
+                    if(job_status != 'DONE') break;
+                    OutFiles+=
+                        '<div>'                       
+                       +'<a href="http://localhost:7777/v1.0/'
+                       +out_files[j].url+'">'
+                       +out_files[j].name+'</a>'
+                       +'</div>';
+                }                
+                TableRow= 
+                     '<tr>'
+                    +'   <td rowspan="2">'
+                    +'        <button id="job_btn'+i+'" class="btn btn-default btn-xs toggle">'
+                    +'        <span class="glyphicon glyphicon-eye-open"></span>'
+                    +'        </button>'
+		    +'	</td>'
+		    +'  <td>'+job_date+'</td>'
+		    +'	<td>'+job_status+'</td>'
+		    +'	<td>'+job_description+'</td>'			
+                    +'</tr>'
+                    +'<tr class="tablesorter-childRow">' 
+                    +'<td colspan="4">'
+                    +'<div class="bold"><b>Output</b></div>'
+                    +OutFiles
+                    +'</td>'
+                    +'</tr>'
+                    ;                                                                      
+                return TableRow;
             }
             function fillJobTable(data) {
+                var tableRows='';
                 for (var i = 0; i < data.length; i++) {
-                    addJobRecord(i,data[i])
+                    tableRows+=addJobRecord(i,data[i]);
+                                        
                 }
+                jobsTable =
+                 '<table id="jobTable" class="table table-responsive tablesorter">'
+                +'	<colgroup>'
+                +'		<col/>'
+                +'		<col/>'
+                +'		<col/>'
+                +'		<col/>'	
+                +'	</colgroup>'
+                +'	<thead>'
+                +'           <tr>'
+                +'               <th></th>'
+                +'                <th>Date</th>'
+                +'                <th>Status</th>'
+                +'                <th>Description</th>'			
+                +'            </tr>'
+                +'	</thead>'
+                +'      <tbody id="jobRecords">'
+                +tableRows
+                +'      </tbody>'
+                +'<tfoot style="size:0px">'
+                +'</tfoot>'
+                +'</table>';
+                // Add table
+                $('#jobsDiv').append(jobsTable);
+                // Compress childs
+                $('.tablesorter-childRow td').hide();
+                // Sort table
+                $("#jobTable").tablesorter(
+                {
+                    theme : 'blue',
+                    sortList: [[1,1]],
+                    cssChildRow: "tablesorter-childRow"
+                }        
+                ); 
+                $('.tablesorter').delegate('.toggle', 'click' ,function(){
+                    $(this).closest('tr').nextUntil('tr:not(.tablesorter-childRow)').find('td').toggle();
+                    return false;
+                });
+                // Log data
+                console.log(jobsTable);
             }            
             function prepareJobTable() {                
                 $.ajax({
                     type: "GET", 
                     url: "http://localhost:7777/v1.0/tasks?user=brunor&app_id=1", 
-                    success: function(data) {
-                            fillJobTable(data);             
+                    dataType: "json",                    
+                    success: function(data) {                                                        
+                            fillJobTable(data);                            
                         }, 
                     error: function(jqXHR, textStatus, errorThrown) {
                             alert(jqXHR.status);
-                        },
-                   dataType: "json"
-               });
+                        }                   
+               });               
             }
             function getNumJobs() {
                 return $('#jobRecords table').size();
@@ -88,10 +131,6 @@ and open the template in the editor.
                             +'</div>';
                 job_description = $('#jobDescription').val();
                 $('#modal-content').html('');
-                //jrec = { 'status': 'SUBMITTED'
-                //        ,'date'  : '2015-10-25 22:39:27'
-                //        ,'description' : job_description
-                //       };
                 // 1st call to register job                
                 $.ajax({
                     url: "http://localhost:7777/v1.0/tasks?user=brunor",
@@ -113,21 +152,8 @@ and open the template in the editor.
                                 contentType: "application/json; charset=utf-8",
                                 data: JSON.stringify({}),
                                 success: function(data) {
-                                        // 3rd Job submitted, retrieve info                                        
-                                        $.ajax({                                            
-                                            url: "http://localhost:7777/v1.0/tasks/"+data.task+"?user=brunor",
-                                            type: "GET", 
-                                            cache: false,
-                                            success: function(data) {
-                                                    // 4th Retrieving job info
-                                                    $('#modal-content').html(job_success);
-                                                    addJobRecord(getNumJobs(),data);
-                                                }, 
-                                            error: function(jqXHR, textStatus, errorThrown) {
-                                                    $('#modal-content').html(job_warning);
-                                                    alert(jqXHR.status);
-                                                }
-                                        });
+                                       $('#jobTable').remove();
+                                       prepareJobTable();
                                     }, 
                                 error: function(jqXHR, textStatus, errorThrown) {
                                         $('#modal-content').html(job_failed);
@@ -155,33 +181,29 @@ and open the template in the editor.
                 $("#helloTesterModal").modal();
             }
             // Initialize page
-            $( document ).ready(function() {
-                prepareJobTable();
+            $( document ).ready(function() {                
+                prepareJobTable();                
             });
         </script>
         <div class="panel panel-default">
         <div class="panel-heading"><h3>HelloTester web application</h3></div>
         <div class="panel-body">
         
-        <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">Launch Hello tester job</button>
+        <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">
+            Launch Hello tester job
+        </button>
         <hr>
-        <table id="submitRecords" class="table table-condensed" style="border-collapse:collapse;"
-               data-sort-name="date" data-sort-order="desc">        
-            <thead>
-            <tr><th>&nbsp;</th>
-                <th data-field="date"        data-align="center" data-sortable="true" style="text-align: center;">Date</th>
-                <th data-field="status"      data-align="center" data-sortable="true" style="text-align: center;">Status</th>
-                <th data-field="description" data-align="left"   data-sortable="true" style="text-align: center;">Description</th>                
-            </tr>
-            </thead>
-            <tbody id="jobRecords">                
-            </tbody>
-        </table>
+        <!-- Submit record table (begin) -->    
+        <div id="jobsDiv"> 
         </div>        
-        </div>                 
+        
+        <!-- Submit record table (end) -->
+        </div>        
+        </div> 
+        <div class="panel-footer"><small>HelloTester</small></div>
         <!-- Modal (begin) -->
-        <div class="modal fade" id="helloTesterModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">          
-          <div class="modal-dialog" role="document">
+        <div class="modal fade" id="helloTesterModal" tabindex="-1" role="dialog" aria-labelledby="HelloTester">          
+          <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
@@ -192,13 +214,13 @@ and open the template in the editor.
                 <p>This application just execute over SSH a simple hostname command.</p>
                 <p>Please press <b>'submit'</b> button to execute the 'Hello' application.</p>
                 <p>Press cancel to return to the Hello' home/summary page.</p>
-                <center>
-                <b>Specify your job identifier below</b>                
+                <p><b>Specify your job identifier: </b>
                 <input type="text" id="jobDescription" size="60"/>
-                <br/>
-                <div class="modal-content" id="modal-content">                 
-                </div>                
-                </center>
+                </p>
+                <!-- This is not shown properly
+                <div class="modal-content" id="modal-content">                                                                               
+                </div>
+                -->
               </div>
               <div class="modal-footer">
                 <center>                
@@ -212,5 +234,3 @@ and open the template in the editor.
         <!-- Modal (end) -->
     </body>    
 </html>
-
-
