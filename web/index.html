@@ -1,8 +1,26 @@
 <!DOCTYPE html>
 <!--
-To change this license header, choose License Headers in Project Properties.
-To change this template file, choose Tools | Templates
-and open the template in the editor.
+ 
+ Copyright (c) 2011:
+ Istituto Nazionale di Fisica Nucleare (INFN), Italy
+ Consorzio COMETA (COMETA), Italy
+ 
+ See http://www.infn.it and and http://www.consorzio-cometa.it for details on
+ the copyright holders.
+ 
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+ 
+    http://www.apache.org/licenses/LICENSE-2.0
+ 
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+ 
+  Author: Riccardo Bruno (INFN) riccardo.bruno@ct.infn.it
 -->
 <html>
     <head>
@@ -11,55 +29,125 @@ and open the template in the editor.
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="js/jquery.min.js"></script>
-        <script src="js/bootstrap.min.js"></script>        
-        <script src="js/jquery.tablesorter.mod.js"></script>          
-    </head>
-    <body>
-        
-        <script type="text/javascript"> 
-            function addJobRecord(i,jrec) {
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>        
+        <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>        
+        <script type="text/javascript">             
+            /*
+             * All the web app needs to configure are the following
+             */
+            var webapp_settings = {
+                apiserver_host: 'localhost'
+               ,apiserver_port: '7777'
+               ,apiserver_ver : 'v1.0'
+               ,username: 'brunor'
+               ,app_id: 1               
+            };
+            /*
+             * Change variable below to change delay of check status loop
+             */
+            var TimerDelay = 15000;
+            /*
+             * Adds the i-th job record
+             */
+            function addJobRecord(i,jrec) {                
+                job_id          = jrec.id;
                 job_status      = jrec.status;
                 job_date        = jrec.date;
                 job_description = jrec.description;
-                out_files       = jrec.output_files;
-                
+                out_files       = jrec.output_files;                
                 var OutFiles ='';
-                for (var j = 0; j < out_files.length; j++) {
-                    // Show only file entries of DONE jobs
-                    if(job_status != 'DONE') break;
-                    OutFiles+=
-                        '<div>'                       
-                       +'<a href="http://localhost:7777/v1.0/'
-                       +out_files[j].url+'">'
-                       +out_files[j].name+'</a>'
-                       +'</div>';
-                }                
-                TableRow= 
-                     '<tr>'
-                    +'   <td rowspan="2">'
-                    +'        <button id="job_btn'+i+'" class="btn btn-default btn-xs toggle">'
-                    +'        <span class="glyphicon glyphicon-eye-open"></span>'
-                    +'        </button>'
-		    +'	</td>'
-		    +'  <td>'+job_date+'</td>'
-		    +'	<td>'+job_status+'</td>'
-		    +'	<td>'+job_description+'</td>'			
-                    +'</tr>'
-                    +'<tr class="tablesorter-childRow">' 
-                    +'<td colspan="4">'
-                    +'<div class="bold"><b>Output</b></div>'
-                    +OutFiles
-                    +'</td>'
-                    +'</tr>'
-                    ;                                                                      
+                if(job_status == 'DONE') {
+                    del_btn='<button id="cln_btn'+job_id+'"'
+                           +'        class="btn btn-xs btn-danger"'
+                           +'        type="button"'
+                           +'        data-toggle="modal"'
+                           +'        data-target="#confirmDelete"'
+                           +'        data-title="Delete job"'
+                           +'        data-message="Are you sure you want to delete job?"'
+                           +'        data-data="'+job_id+'">'
+                           +'<i class="glyphicon glyphicon-trash"></i> Delete'
+                           +'</button>';
+                    for (var j = 0; j < out_files.length; j++) 
+                        OutFiles+=
+                            '<div class="row">'
+                           +'  <div class="col-sm-3">'
+                           +'  <a href="http://'+webapp_settings.apiserver_host
+                                            +':'+webapp_settings.apiserver_port
+                                            +'/'+webapp_settings.apiserver_ver
+                                            +'/'
+                                            +out_files[j].url+'">'
+                                            +out_files[j].name+'</a>'
+                           +'  </div>'
+                           +'  <div class="col-sm-3">'
+                           +'  </div>'
+                           +'  <div class="col-sm-3">'
+                           +'  </div>'
+                           +'</div>';                    
+                } else {
+                    del_btn='';                             
+                    OutFiles=
+                            '  <div class="col-sm-3"><small>No output available yet</small>'
+                           +'  </div>'
+                           +'  <div class="col-sm-3">'
+                           +'  </div>'
+                           +'  <div class="col-sm-3">'
+                           +'  </div>';
+                }
+                if(job_status != 'CANCELLED')
+                    TableRow= 
+                         '<tr id="'+job_id+'">'
+                        +'   <td rowspan="2">'
+                        +'        <button id="job_btn'+job_id+'" class="btn btn-default btn-xs toggle">'
+                        +'        <span class="glyphicon glyphicon-eye-open"></span>'
+                        +'        </button>'
+                        +'	</td>'
+                        +'  <td>'+job_date+'</td>'
+                        +'	<td>'+job_status+'</td>'
+                        +'	<td>'+job_description+'</td>'			
+                        +'</tr>'
+                        +'<tr class="tablesorter-childRow">' 
+                        +'<td colspan="4">'
+                        +'<div class="row">'
+                        +'  <div class="col-sm-3"><b>Output</b></div>'
+                        +'  <div class="col-sm-3"></div>'
+                        +'  <div class="col-sm-3">'+del_btn+'</div>'
+                        +'</div>'
+                        +OutFiles                      
+                        +'</td>'
+                        +'</tr>'
+                        ;                                                                      
                 return TableRow;
             }
+            /*
+             * Clean the specified job             
+             */
+            function cleanJob(job_id) {                 
+                $.ajax({                     
+                    type: "DELETE", 
+                    url: 'http://'+webapp_settings.apiserver_host+':'
+                                  +webapp_settings.apiserver_port+'/'
+                                  +webapp_settings.apiserver_ver +'/tasks/'+job_id, 
+                    dataType: "json",                    
+                    success: function(data) {
+                            $('#confirmJobDel').hide();
+                            $('#cancelJobDel').text('Continue');
+                            $('#confirmDelete').find('.modal-body p').text('Successfully removed job');
+                            $('#jobTable').find('#'+job_id).next().remove();
+                            $('#jobTable').find('#'+job_id).remove();
+                        }, 
+                    error: function(jqXHR, textStatus, errorThrown) {
+                            alert(jqXHR.status);
+                        }                   
+               });            
+            }
+            /*
+             * Fills the job table from incoming JSON data
+             */
             function fillJobTable(data) {
                 var tableRows='';
                 for (var i = 0; i < data.length; i++) {
-                    tableRows+=addJobRecord(i,data[i]);
-                                        
+                    tableRows+=addJobRecord(i,data[i]);                                        
                 }
                 jobsTable =
                  '<table id="jobTable" class="table table-responsive tablesorter">'
@@ -98,14 +186,20 @@ and open the template in the editor.
                 $('.tablesorter').delegate('.toggle', 'click' ,function(){
                     $(this).closest('tr').nextUntil('tr:not(.tablesorter-childRow)').find('td').toggle();
                     return false;
-                });
-                // Log data
-                console.log(jobsTable);
-            }            
-            function prepareJobTable() {                
+                });                
+            }
+            /*
+             * Calls the API Server to generate the Jobs table
+             */
+            function prepareJobTable() { 
+                $('#jobsDiv').html('');
                 $.ajax({
                     type: "GET", 
-                    url: "http://localhost:7777/v1.0/tasks?user=brunor&app_id=1", 
+                    url: 'http://'+webapp_settings.apiserver_host+':'
+                                  +webapp_settings.apiserver_port+'/'
+                                  +webapp_settings.apiserver_ver +'/tasks?user='
+                                  +webapp_settings.username      +'&app_id='
+                                  +webapp_settings.app_id, 
                     dataType: "json",                    
                     success: function(data) {                                                        
                             fillJobTable(data);                            
@@ -115,10 +209,16 @@ and open the template in the editor.
                         }                   
                });               
             }
+            /*
+             * Helper function returnin the number of jobs
+             */
             function getNumJobs() {
-                return $('#jobRecords table').size();
+                return ($('#jobTable tr').size()-1)/2;
             }
-            function submit() {
+            /*
+             * Function responsible of job submission
+             */
+            function submit(job_desc) {
                 $('#submitButton').hide();
                 job_failed ='<div class="alert alert-danger">'
                            +'<strong>ERROR!</strong> Failed to submit job.'
@@ -133,19 +233,22 @@ and open the template in the editor.
                 $('#modal-content').html('');
                 // 1st call to register job                
                 $.ajax({
-                    url: "http://localhost:7777/v1.0/tasks?user=brunor",
+                    url: 'http://'+webapp_settings.apiserver_host+':'
+                                  +webapp_settings.apiserver_port+'/'
+                                  +webapp_settings.apiserver_ver +'/tasks?user='
+                                  +webapp_settings.username,                            
                     type: "POST", 
                     cache: false,
                     dataType: "json",
                     contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify({ application: "1"
-                                          , description: job_description
-                                          , output_files: []                                          
-                                         }),                          
+                    data: JSON.stringify(job_desc),                          
                     success: function(data) {
                             // 2nd call finalize and start submission                                                        
                             $.ajax({
-                                url: "http://localhost:7777/v1.0/tasks/"+data.id+"/input?user=brunor",
+                                url: 'http://'+webapp_settings.apiserver_host+':'
+                                              +webapp_settings.apiserver_port+'/'
+                                              +webapp_settings.apiserver_ver +'/tasks/'+data.id+'/input?user='
+                                              +webapp_settings.username,                                              
                                 type: "POST", 
                                 cache: false,
                                 dataType: "json",
@@ -166,7 +269,46 @@ and open the template in the editor.
                             alert(jqXHR.status);
                         }                   
                 });                                
+            }            
+            /*
+             * Function that checks for job status change
+             */
+            function checkJobs() {                
+                $('#jobTable tr').each(function(i,row) {                    
+                    if(   i>0                  // Starting after thead
+                       && i%2!=0               // Consider only odd rows (no childs)
+                      ) {                      // Consider only active states                        
+                       status=row.cells[2].innerHTML;                       
+                       if(    status != 'DONE'     
+                          &&  status != 'FAILED'
+                          &&  status != 'ABORT')                                                  
+                            $.ajax({
+                                    url: 'http://'+webapp_settings.apiserver_host+':'
+                                                  +webapp_settings.apiserver_port+'/'
+                                                  +webapp_settings.apiserver_ver +'/tasks/'+row.id+'?user='
+                                                  +webapp_settings.username,                                                            
+                                    type: "GET", 
+                                    cache: false,                                
+                                    contentType: "application/json; charset=utf-8",                                
+                                    success: function(data) {                                      
+                                        if(data.status == 'DONE')
+                                            prepareJobTable();
+                                        else
+                                            $('#'+data.id).find("td").eq(2).html(data.status);
+                                        }, 
+                                    error: function(jqXHR, textStatus, errorThrown) {
+                                            console.log(jqXHR.status);
+                                        }
+                                });
+                        }
+                });                
+                // Set timeout again for the next loop
+                setTimeout(checkJobs, TimerDelay);
             }
+            
+            /*
+             * Function that opens the submit modal frame
+             */
             function openModal() {
                 var currentdate = new Date(); 
                 var datetime = currentdate.getDate() + "/"
@@ -177,18 +319,53 @@ and open the template in the editor.
                              + currentdate.getSeconds();
                 $('#submitButton').show();
                 $('#modal-content').html('');                
-                $('#jobDescription').val('Helo tester job desc '+datetime);
+                $('#jobDescription').val('Hello tester job desc '+datetime);
                 $("#helloTesterModal").modal();
             }
-            // Initialize page
-            $( document ).ready(function() {                
-                prepareJobTable();                
-            });
+            /*
+             * App specific job submission call;
+             * Just prepare the job_desc and call the submit() function             
+             */
+            function submitJob() {
+                job_usrdesc = $('#jobDescription').val();
+                job_desc = { application : webapp_settings.app_id
+                            ,description : job_usrdesc
+                            ,output_files: []
+                            ,input_files : []
+                           };
+                submit(job_desc);
+            }
+            /*
+             * Page initialization
+             */
+            $( document ).ready(function() {  
+                    $('#confirmDelete').on('show.bs.modal', function (e) {
+                    $message = $(e.relatedTarget).attr('data-message');
+                    $(this).find('.modal-body p').text($message);
+                    $title = $(e.relatedTarget).attr('data-title');
+                    $job_id = $(e.relatedTarget).attr('data-data');
+                    $(this).find('.modal-title').text($title);
+                    $('#job_id').attr('data-value', $job_id)
+                    $('#confirmJobDel').show();
+                    $('#cancelJobDel').text('Cancel')
+                });
+                // Form confirm (yes/ok) handler, submits form 
+                $('#confirmDelete').find('.modal-footer #confirmJobDel').on('click', function(e){
+                    $job_id = $('#job_id').attr('data-value');
+                    cleanJob($job_id);              
+                });
+                prepareJobTable();                 // Fills the job table
+                setTimeout(checkJobs, TimerDelay); // Initialize the job check loop
+            });            
         </script>
+    </head>
+    <body>                
         <div class="panel panel-default">
-        <div class="panel-heading"><h3>HelloTester web application</h3></div>
-        <div class="panel-body">
-        
+        <div class="panel-heading"><h3> HelloTester web application </h3></div>
+        <div class="panel-body"> 
+            <p>This is the simpler application
+                 making use of FutureGateway REST APIs. It executes a simple '/bin/hostname'
+        command into a remote machine belonging to a distributed infrastructure. In this particular case the execution will be done through the SSH JSAGA adaptor.</p>
         <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">
             Launch Hello tester job
         </button>
@@ -225,12 +402,33 @@ and open the template in the editor.
               <div class="modal-footer">
                 <center>                
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onClick="submit()" id="submitButton">Submit</button>
+                <button type="button" class="btn btn-primary" onClick="submitJob()" id="submitButton">Submit</button>
                 </center>
               </div>
             </div>
           </div>
         </div>   
         <!-- Modal (end) -->
+        <!-- Confirm Modal Dialog (begin) -->
+                       
+        <div class="modal fade" id="confirmDelete" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Delete Parmanently</h4>
+              </div>
+              <div class="modal-body">
+                  <p></p>
+              </div>                
+                <div id="job_id" class='job_id' data-name='job_id' data-value=''/>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="cancelJobDel">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmJobDel">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Confirm Modal Dialog (end) -->
     </body>    
 </html>
