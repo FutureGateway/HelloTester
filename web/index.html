@@ -1,38 +1,214 @@
 <!DOCTYPE html>
 <!--
- 
- Copyright (c) 2011:
+
+ Copyright (c) 2015:
  Istituto Nazionale di Fisica Nucleare (INFN), Italy
- Consorzio COMETA (COMETA), Italy
- 
+
  See http://www.infn.it and and http://www.consorzio-cometa.it for details on
  the copyright holders.
- 
+
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
  You may obtain a copy of the License at
- 
+
     http://www.apache.org/licenses/LICENSE-2.0
- 
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  See the License for the specific language governing permissions and
  limitations under the License.
- 
+
   Author: Riccardo Bruno (INFN) riccardo.bruno@ct.infn.it
 -->
 <html>
     <head>
-        <title>HelloTester</title>
-        <!-- Bootstrap -->
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link href="css/bootstrap-slider.min.css" rel="stylesheet">
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>HelloTester</title>
+    </head>
+    <body>
+        <ul class="nav nav-tabs nav-pills" role="tablist">
+          <li role="presentation" class="active"><a href="#submit" role="tab" data-toggle="pill">Submit</a></li>
+          <li role="presentation"><a href="#status" role="tab" data-toggle="pill">Status</a></li>
+        </ul>
+        <div class="tab-content">
+          <div role="tabpanel" class="tab-pane active in fade" id="submit">
+
+        <div class="panel panel-default">
+        <div class="panel-heading"><h3> HelloTester web application </h3></div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-12">
+            <p>This is the simpler application
+                 making use of FutureGateway REST APIs. It executes a simple '/bin/hostname'
+        command into a remote machine belonging to a distributed infrastructure. In this particular case the execution will be done through the SSH JSAGA adaptor.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="analysis">Analysis</label>
+                    <select id="analysis" class="form-control">
+                      <option>Precipitation trend analysis</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="model">Model</label>
+                    <select id="model" class="form-control">
+                      <option>CMCC-CM</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="scenario">Scenario</label>
+                    <select id="scenario" class="form-control">
+                      <option>RCP8.5</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="frequency">Frequency</label>
+                    <select id="frequency" class="form-control">
+                      <option>3h</option>
+                      <option>6h</option>
+                      <option>daily</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="percentile">Percentile</label>
+                    <input id="percentile" data-slider-id='percentileSlider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="50"/>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="page-header">
+                        <h3>Temporal Subset</h3>
+                        </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label for="temporalScenario">Scenario</label>
+                        <input id="temporalScenario" data-slider-id='temporalScenario1Slider' type="text" data-slider-min="2071" data-slider-max="2100" data-slider-step="1" data-slider-value="[2080,2090]"/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label for="temporalHistorical">Scenario</label>
+                        <input id="temporalHistorical" data-slider-id='temporalHistorical1Slider' type="text" data-slider-min="1976" data-slider-max="2005" data-slider-step="1" data-slider-value="[1985,1995]"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-9">
+              <div class="row">
+              </div>
+              This is the map
+            </div>
+          </div>
+        <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">
+            Launch Hello tester job
+        </button>
+        <hr>
+        <!-- Submit record table (begin) -->
+        <div id="jobsDiv">
+        </div>
+
+        <!-- Submit record table (end) -->
+        </div>
+        <div class="panel-footer"><small>HelloTester</small></div>
+        </div>
+        <!-- Modal (begin) -->
+        <div class="modal fade" id="helloTesterModal" tabindex="-1" role="dialog" aria-labelledby="HelloTester">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Hello tester submission pane</h4>
+              </div>
+              <div class="modal-body">
+                <p>Welcome to the 1st web application testing the new FutureGateway APIs.</p>
+                <p>This application just execute over SSH a simple hostname command.</p>
+                <p>Please press <b>'submit'</b> button to execute the 'Hello' application.</p>
+                <p>Press cancel to return to the Hello' home/summary page.</p>
+                <p><b>Specify your job identifier: </b>
+                <input type="text" id="jobDescription" size="60"/>
+                </p>
+                <!-- This is not shown properly
+                <div class="modal-content" id="modal-content">
+                </div>
+                -->
+              </div>
+              <div class="modal-footer">
+                <center>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onClick="submitJob()" id="submitButton">Submit</button>
+                </center>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Modal (end) -->
+        <!-- Confirm Modal Dialog (begin) -->
+
+        <div class="modal fade" id="confirmDelete" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Delete Parmanently</h4>
+              </div>
+              <div class="modal-body">
+                  <p></p>
+              </div>
+                <div id="job_id" class='job_id' data-name='job_id' data-value=''></div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="cancelJobDel">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmJobDel">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div role="tabpanel" class="tab-pane fade" id="status">
+      </div>
+    </div>
+
+        <!-- Confirm Modal Dialog (end) -->
         <script type="text/javascript" src="js/jquery.min.js"></script>
-        <script type="text/javascript" src="js/bootstrap.min.js"></script>        
-        <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>        
-        <script type="text/javascript">             
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
+        <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
+        <script type="text/javascript">
             /*
              * All the web app needs to configure are the following
              */
@@ -41,7 +217,7 @@
                ,apiserver_port: '7777'
                ,apiserver_ver : 'v1.0'
                ,username: 'brunor'
-               ,app_id: 1               
+               ,app_id: 1
             };
             /*
              * Change variable below to change delay of check status loop
@@ -50,12 +226,12 @@
             /*
              * Adds the i-th job record
              */
-            function addJobRecord(i,jrec) {                
+            function addJobRecord(i,jrec) {
                 job_id          = jrec.id;
                 job_status      = jrec.status;
                 job_date        = jrec.date;
                 job_description = jrec.description;
-                out_files       = jrec.output_files;                
+                out_files       = jrec.output_files;
                 var OutFiles ='';
                 if(job_status == 'DONE') {
                     del_btn='<button id="cln_btn'+job_id+'"'
@@ -68,7 +244,7 @@
                            +'        data-data="'+job_id+'">'
                            +'<i class="glyphicon glyphicon-trash"></i> Delete'
                            +'</button>';
-                    for (var j = 0; j < out_files.length; j++) 
+                    for (var j = 0; j < out_files.length; j++)
                         OutFiles+=
                             '<div class="row">'
                            +'  <div class="col-sm-3">'
@@ -83,9 +259,9 @@
                            +'  </div>'
                            +'  <div class="col-sm-3">'
                            +'  </div>'
-                           +'</div>';                    
+                           +'</div>';
                 } else {
-                    del_btn='';                             
+                    del_btn='';
                     OutFiles=
                             '  <div class="col-sm-3"><small>No output available yet</small>'
                            +'  </div>'
@@ -95,7 +271,7 @@
                            +'  </div>';
                 }
                 if(job_status != 'CANCELLED')
-                    TableRow= 
+                    TableRow=
                          '<tr id="'+job_id+'">'
                         +'   <td rowspan="2">'
                         +'        <button id="job_btn'+job_id+'" class="btn btn-default btn-xs toggle">'
@@ -104,42 +280,42 @@
                         +'	</td>'
                         +'  <td>'+job_date+'</td>'
                         +'	<td>'+job_status+'</td>'
-                        +'	<td>'+job_description+'</td>'			
+                        +'	<td>'+job_description+'</td>'
                         +'</tr>'
-                        +'<tr class="tablesorter-childRow">' 
+                        +'<tr class="tablesorter-childRow">'
                         +'<td colspan="4">'
                         +'<div class="row">'
                         +'  <div class="col-sm-3"><b>Output</b></div>'
                         +'  <div class="col-sm-3"></div>'
                         +'  <div class="col-sm-3">'+del_btn+'</div>'
                         +'</div>'
-                        +OutFiles                      
+                        +OutFiles
                         +'</td>'
                         +'</tr>'
-                        ;                                                                      
+                        ;
                 return TableRow;
             }
             /*
-             * Clean the specified job             
+             * Clean the specified job
              */
-            function cleanJob(job_id) {                 
-                $.ajax({                     
-                    type: "DELETE", 
+            function cleanJob(job_id) {
+                $.ajax({
+                    type: "DELETE",
                     url: 'http://'+webapp_settings.apiserver_host+':'
                                   +webapp_settings.apiserver_port+'/'
-                                  +webapp_settings.apiserver_ver +'/tasks/'+job_id, 
-                    dataType: "json",                    
+                                  +webapp_settings.apiserver_ver +'/tasks/'+job_id,
+                    dataType: "json",
                     success: function(data) {
                             $('#confirmJobDel').hide();
                             $('#cancelJobDel').text('Continue');
                             $('#confirmDelete').find('.modal-body p').text('Successfully removed job');
                             $('#jobTable').find('#'+job_id).next().remove();
                             $('#jobTable').find('#'+job_id).remove();
-                        }, 
+                        },
                     error: function(jqXHR, textStatus, errorThrown) {
                             alert(jqXHR.status);
-                        }                   
-               });            
+                        }
+               });
             }
             /*
              * Fills the job table from incoming JSON data
@@ -147,7 +323,7 @@
             function fillJobTable(data) {
                 var tableRows='';
                 for (var i = 0; i < data.length; i++) {
-                    tableRows+=addJobRecord(i,data[i]);                                        
+                    tableRows+=addJobRecord(i,data[i]);
                 }
                 jobsTable =
                  '<table id="jobTable" class="table table-responsive tablesorter">'
@@ -155,14 +331,14 @@
                 +'		<col/>'
                 +'		<col/>'
                 +'		<col/>'
-                +'		<col/>'	
+                +'		<col/>'
                 +'	</colgroup>'
                 +'	<thead>'
                 +'           <tr>'
                 +'               <th></th>'
                 +'                <th>Date</th>'
                 +'                <th>Status</th>'
-                +'                <th>Description</th>'			
+                +'                <th>Description</th>'
                 +'            </tr>'
                 +'	</thead>'
                 +'      <tbody id="jobRecords">'
@@ -181,33 +357,33 @@
                     theme : 'blue',
                     sortList: [[1,1]],
                     cssChildRow: "tablesorter-childRow"
-                }        
-                ); 
+                }
+                );
                 $('.tablesorter').delegate('.toggle', 'click' ,function(){
                     $(this).closest('tr').nextUntil('tr:not(.tablesorter-childRow)').find('td').toggle();
                     return false;
-                });                
+                });
             }
             /*
              * Calls the API Server to generate the Jobs table
              */
-            function prepareJobTable() { 
+            function prepareJobTable() {
                 $('#jobsDiv').html('');
                 $.ajax({
-                    type: "GET", 
+                    type: "GET",
                     url: 'http://'+webapp_settings.apiserver_host+':'
                                   +webapp_settings.apiserver_port+'/'
                                   +webapp_settings.apiserver_ver +'/tasks?user='
                                   +webapp_settings.username      +'&app_id='
-                                  +webapp_settings.app_id, 
-                    dataType: "json",                    
-                    success: function(data) {                                                        
-                            fillJobTable(data);                            
-                        }, 
+                                  +webapp_settings.app_id,
+                    dataType: "json",
+                    success: function(data) {
+                            fillJobTable(data);
+                        },
                     error: function(jqXHR, textStatus, errorThrown) {
                             alert(jqXHR.status);
-                        }                   
-               });               
+                        }
+               });
             }
             /*
              * Helper function returnin the number of jobs
@@ -231,25 +407,25 @@
                             +'</div>';
                 job_description = $('#jobDescription').val();
                 $('#modal-content').html('');
-                // 1st call to register job                
+                // 1st call to register job
                 $.ajax({
                     url: 'http://'+webapp_settings.apiserver_host+':'
                                   +webapp_settings.apiserver_port+'/'
                                   +webapp_settings.apiserver_ver +'/tasks?user='
-                                  +webapp_settings.username,                            
-                    type: "POST", 
+                                  +webapp_settings.username,
+                    type: "POST",
                     cache: false,
                     dataType: "json",
                     contentType: "application/json; charset=utf-8",
-                    data: JSON.stringify(job_desc),                          
+                    data: JSON.stringify(job_desc),
                     success: function(data) {
-                            // 2nd call finalize and start submission                                                        
+                            // 2nd call finalize and start submission
                             $.ajax({
                                 url: 'http://'+webapp_settings.apiserver_host+':'
                                               +webapp_settings.apiserver_port+'/'
                                               +webapp_settings.apiserver_ver +'/tasks/'+data.id+'/input?user='
-                                              +webapp_settings.username,                                              
-                                type: "POST", 
+                                              +webapp_settings.username,
+                                type: "POST",
                                 cache: false,
                                 dataType: "json",
                                 contentType: "application/json; charset=utf-8",
@@ -257,74 +433,74 @@
                                 success: function(data) {
                                        $('#jobTable').remove();
                                        prepareJobTable();
-                                    }, 
+                                    },
                                 error: function(jqXHR, textStatus, errorThrown) {
                                         $('#modal-content').html(job_failed);
                                         alert(jqXHR.status);
                                     }
                             });
-                        }, 
+                        },
                     error: function(jqXHR, textStatus, errorThrown) {
                             $('#modal-content').html(job_failed);
                             alert(jqXHR.status);
-                        }                   
-                });                                
-            }            
+                        }
+                });
+            }
             /*
              * Function that checks for job status change
              */
-            function checkJobs() {                
-                $('#jobTable tr').each(function(i,row) {                    
+            function checkJobs() {
+                $('#jobTable tr').each(function(i,row) {
                     if(   i>0                  // Starting after thead
                        && i%2!=0               // Consider only odd rows (no childs)
-                      ) {                      // Consider only active states                        
-                       status=row.cells[2].innerHTML;                       
-                       if(    status != 'DONE'     
+                      ) {                      // Consider only active states
+                       status=row.cells[2].innerHTML;
+                       if(    status != 'DONE'
                           &&  status != 'FAILED'
-                          &&  status != 'ABORT')                                                  
+                          &&  status != 'ABORT')
                             $.ajax({
                                     url: 'http://'+webapp_settings.apiserver_host+':'
                                                   +webapp_settings.apiserver_port+'/'
                                                   +webapp_settings.apiserver_ver +'/tasks/'+row.id+'?user='
-                                                  +webapp_settings.username,                                                            
-                                    type: "GET", 
-                                    cache: false,                                
-                                    contentType: "application/json; charset=utf-8",                                
-                                    success: function(data) {                                      
+                                                  +webapp_settings.username,
+                                    type: "GET",
+                                    cache: false,
+                                    contentType: "application/json; charset=utf-8",
+                                    success: function(data) {
                                         if(data.status == 'DONE')
                                             prepareJobTable();
                                         else
                                             $('#'+data.id).find("td").eq(2).html(data.status);
-                                        }, 
+                                        },
                                     error: function(jqXHR, textStatus, errorThrown) {
                                             console.log(jqXHR.status);
                                         }
                                 });
                         }
-                });                
+                });
                 // Set timeout again for the next loop
                 setTimeout(checkJobs, TimerDelay);
             }
-            
+
             /*
              * Function that opens the submit modal frame
              */
             function openModal() {
-                var currentdate = new Date(); 
+                var currentdate = new Date();
                 var datetime = currentdate.getDate() + "/"
-                             +(currentdate.getMonth()+1)  + "/" 
-                             + currentdate.getFullYear() + " @ "  
-                             + currentdate.getHours() + ":"  
-                             + currentdate.getMinutes() + ":" 
+                             +(currentdate.getMonth()+1)  + "/"
+                             + currentdate.getFullYear() + " @ "
+                             + currentdate.getHours() + ":"
+                             + currentdate.getMinutes() + ":"
                              + currentdate.getSeconds();
                 $('#submitButton').show();
-                $('#modal-content').html('');                
+                $('#modal-content').html('');
                 $('#jobDescription').val('Hello tester job desc '+datetime);
                 $("#helloTesterModal").modal();
             }
             /*
              * App specific job submission call;
-             * Just prepare the job_desc and call the submit() function             
+             * Just prepare the job_desc and call the submit() function
              */
             function submitJob() {
                 job_usrdesc = $('#jobDescription').val();
@@ -338,7 +514,7 @@
             /*
              * Page initialization
              */
-            $( document ).ready(function() {  
+            $( document ).ready(function() {
                     $('#confirmDelete').on('show.bs.modal', function (e) {
                     $message = $(e.relatedTarget).attr('data-message');
                     $(this).find('.modal-body p').text($message);
@@ -349,86 +525,17 @@
                     $('#confirmJobDel').show();
                     $('#cancelJobDel').text('Cancel')
                 });
-                // Form confirm (yes/ok) handler, submits form 
+                // Form confirm (yes/ok) handler, submits form
                 $('#confirmDelete').find('.modal-footer #confirmJobDel').on('click', function(e){
                     $job_id = $('#job_id').attr('data-value');
-                    cleanJob($job_id);              
+                    cleanJob($job_id);
                 });
                 prepareJobTable();                 // Fills the job table
                 setTimeout(checkJobs, TimerDelay); // Initialize the job check loop
-            });            
+                $("#percentile").slider({});
+                $("#temporalScenario").slider({});
+                $("#temporalHistorical").slider({});
+            });
         </script>
-    </head>
-    <body>                
-        <div class="panel panel-default">
-        <div class="panel-heading"><h3> HelloTester web application </h3></div>
-        <div class="panel-body"> 
-            <p>This is the simpler application
-                 making use of FutureGateway REST APIs. It executes a simple '/bin/hostname'
-        command into a remote machine belonging to a distributed infrastructure. In this particular case the execution will be done through the SSH JSAGA adaptor.</p>
-        <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">
-            Launch Hello tester job
-        </button>
-        <hr>
-        <!-- Submit record table (begin) -->    
-        <div id="jobsDiv"> 
-        </div>        
-        
-        <!-- Submit record table (end) -->
-        </div>        
-        </div> 
-        <div class="panel-footer"><small>HelloTester</small></div>
-        <!-- Modal (begin) -->
-        <div class="modal fade" id="helloTesterModal" tabindex="-1" role="dialog" aria-labelledby="HelloTester">          
-          <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">Hello tester submission pane</h4>
-              </div>
-              <div class="modal-body">
-                <p>Welcome to the 1st web application testing the new FutureGateway APIs.</p>
-                <p>This application just execute over SSH a simple hostname command.</p>
-                <p>Please press <b>'submit'</b> button to execute the 'Hello' application.</p>
-                <p>Press cancel to return to the Hello' home/summary page.</p>
-                <p><b>Specify your job identifier: </b>
-                <input type="text" id="jobDescription" size="60"/>
-                </p>
-                <!-- This is not shown properly
-                <div class="modal-content" id="modal-content">                                                                               
-                </div>
-                -->
-              </div>
-              <div class="modal-footer">
-                <center>                
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onClick="submitJob()" id="submitButton">Submit</button>
-                </center>
-              </div>
-            </div>
-          </div>
-        </div>   
-        <!-- Modal (end) -->
-        <!-- Confirm Modal Dialog (begin) -->
-                       
-        <div class="modal fade" id="confirmDelete" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Delete Parmanently</h4>
-              </div>
-              <div class="modal-body">
-                  <p></p>
-              </div>                
-                <div id="job_id" class='job_id' data-name='job_id' data-value=''/>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal" id="cancelJobDel">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmJobDel">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Confirm Modal Dialog (end) -->
-    </body>    
+    </body>
 </html>
