@@ -25,12 +25,189 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link href="css/bootstrap-slider.min.css" rel="stylesheet">
         <link href="css/bootstrap.min.css" rel="stylesheet">
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>HelloTester</title>
     </head>
     <body>
+        <ul class="nav nav-tabs nav-pills" role="tablist">
+          <li role="presentation" class="active"><a href="#submit" role="tab" data-toggle="pill">Submit</a></li>
+          <li role="presentation"><a href="#status" role="tab" data-toggle="pill">Status</a></li>
+        </ul>
+        <div class="tab-content">
+          <div role="tabpanel" class="tab-pane active in fade" id="submit">
+
+        <div class="panel panel-default">
+        <div class="panel-heading"><h3> HelloTester web application </h3></div>
+        <div class="panel-body">
+          <div class="row">
+            <div class="col-md-12">
+            <p>This is the simpler application
+                 making use of FutureGateway REST APIs. It executes a simple '/bin/hostname'
+        command into a remote machine belonging to a distributed infrastructure. In this particular case the execution will be done through the SSH JSAGA adaptor.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-3">
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="analysis">Analysis</label>
+                    <select id="analysis" class="form-control">
+                      <option>Precipitation trend analysis</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="model">Model</label>
+                    <select id="model" class="form-control">
+                      <option>CMCC-CM</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="scenario">Scenario</label>
+                    <select id="scenario" class="form-control">
+                      <option>RCP8.5</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="frequency">Frequency</label>
+                    <select id="frequency" class="form-control">
+                      <option>3h</option>
+                      <option>6h</option>
+                      <option>daily</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label for="percentile">Percentile</label>
+                    <input id="percentile" data-slider-id='percentileSlider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="1" data-slider-value="50"/>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12">
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="page-header">
+                        <h3>Temporal Subset</h3>
+                        </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label for="temporalScenario">Scenario</label>
+                        <input id="temporalScenario" data-slider-id='temporalScenario1Slider' type="text" data-slider-min="2071" data-slider-max="2100" data-slider-step="1" data-slider-value="[2080,2090]"/>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-md-12">
+                      <div class="form-group">
+                        <label for="temporalHistorical">Scenario</label>
+                        <input id="temporalHistorical" data-slider-id='temporalHistorical1Slider' type="text" data-slider-min="1976" data-slider-max="2005" data-slider-step="1" data-slider-value="[1985,1995]"/>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-9">
+              <div class="row">
+              </div>
+              This is the map
+            </div>
+          </div>
+        <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">
+            Launch Hello tester job
+        </button>
+        <hr>
+        <!-- Submit record table (begin) -->
+        <div id="jobsDiv">
+        </div>
+
+        <!-- Submit record table (end) -->
+        </div>
+        <div class="panel-footer"><small>HelloTester</small></div>
+        </div>
+        <!-- Modal (begin) -->
+        <div class="modal fade" id="helloTesterModal" tabindex="-1" role="dialog" aria-labelledby="HelloTester">
+          <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title" id="myModalLabel">Hello tester submission pane</h4>
+              </div>
+              <div class="modal-body">
+                <p>Welcome to the 1st web application testing the new FutureGateway APIs.</p>
+                <p>This application just execute over SSH a simple hostname command.</p>
+                <p>Please press <b>'submit'</b> button to execute the 'Hello' application.</p>
+                <p>Press cancel to return to the Hello' home/summary page.</p>
+                <p><b>Specify your job identifier: </b>
+                <input type="text" id="jobDescription" size="60"/>
+                </p>
+                <!-- This is not shown properly
+                <div class="modal-content" id="modal-content">
+                </div>
+                -->
+              </div>
+              <div class="modal-footer">
+                <center>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onClick="submitJob()" id="submitButton">Submit</button>
+                </center>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Modal (end) -->
+        <!-- Confirm Modal Dialog (begin) -->
+
+        <div class="modal fade" id="confirmDelete" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h4 class="modal-title">Delete Parmanently</h4>
+              </div>
+              <div class="modal-body">
+                  <p></p>
+              </div>
+                <div id="job_id" class='job_id' data-name='job_id' data-value=''></div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" id="cancelJobDel">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmJobDel">Delete</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div role="tabpanel" class="tab-pane fade" id="status">
+      </div>
+    </div>
+
+        <!-- Confirm Modal Dialog (end) -->
+        <script type="text/javascript" src="js/jquery.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap.min.js"></script>
+        <script type="text/javascript" src="js/bootstrap-slider.min.js"></script>
+        <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
         <script type="text/javascript">
             /*
              * All the web app needs to configure are the following
@@ -355,92 +532,10 @@
                 });
                 prepareJobTable();                 // Fills the job table
                 setTimeout(checkJobs, TimerDelay); // Initialize the job check loop
+                $("#percentile").slider({});
+                $("#temporalScenario").slider({});
+                $("#temporalHistorical").slider({});
             });
         </script>
-        <ul class="nav nav-tabs nav-pills" role="tablist">
-          <li role="presentation" class="active"><a href="#submit" role="tab" data-toggle="pill">Submit</a></li>
-          <li role="presentation"><a href="#status" role="tab" data-toggle="pill">Status</a></li>
-        </ul>
-        <div class="tab-content">
-          <div role="tabpanel" class="tab-pane active in fade" id="submit">
-
-        <div class="panel panel-default">
-        <div class="panel-heading"><h3> HelloTester web application </h3></div>
-        <div class="panel-body">
-            <p>This is the simpler application
-                 making use of FutureGateway REST APIs. It executes a simple '/bin/hostname'
-        command into a remote machine belonging to a distributed infrastructure. In this particular case the execution will be done through the SSH JSAGA adaptor.</p>
-        <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">
-            Launch Hello tester job
-        </button>
-        <hr>
-        <!-- Submit record table (begin) -->
-        <div id="jobsDiv">
-        </div>
-
-        <!-- Submit record table (end) -->
-        </div>
-        <div class="panel-footer"><small>HelloTester</small></div>
-        </div>
-        <!-- Modal (begin) -->
-        <div class="modal fade" id="helloTesterModal" tabindex="-1" role="dialog" aria-labelledby="HelloTester">
-          <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title" id="myModalLabel">Hello tester submission pane</h4>
-              </div>
-              <div class="modal-body">
-                <p>Welcome to the 1st web application testing the new FutureGateway APIs.</p>
-                <p>This application just execute over SSH a simple hostname command.</p>
-                <p>Please press <b>'submit'</b> button to execute the 'Hello' application.</p>
-                <p>Press cancel to return to the Hello' home/summary page.</p>
-                <p><b>Specify your job identifier: </b>
-                <input type="text" id="jobDescription" size="60"/>
-                </p>
-                <!-- This is not shown properly
-                <div class="modal-content" id="modal-content">
-                </div>
-                -->
-              </div>
-              <div class="modal-footer">
-                <center>
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onClick="submitJob()" id="submitButton">Submit</button>
-                </center>
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Modal (end) -->
-        <!-- Confirm Modal Dialog (begin) -->
-
-        <div class="modal fade" id="confirmDelete" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content">
-              <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                <h4 class="modal-title">Delete Parmanently</h4>
-              </div>
-              <div class="modal-body">
-                  <p></p>
-              </div>
-                <div id="job_id" class='job_id' data-name='job_id' data-value=''></div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal" id="cancelJobDel">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmJobDel">Delete</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div role="tabpanel" class="tab-pane fade" id="status">
-      </div>
-    </div>
-
-        <!-- Confirm Modal Dialog (end) -->
-        <script type="text/javascript" src="js/jquery.min.js"></script>
-        <script type="text/javascript" src="js/bootstrap.min.js"></script>
-        <script type="text/javascript" src="js/jquery.tablesorter.min.js"></script>
     </body>
 </html>
