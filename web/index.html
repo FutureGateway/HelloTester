@@ -37,11 +37,12 @@
              * All the web app needs to configure are the following
              */
             var webapp_settings = {
-                apiserver_host: 'localhost'
-               ,apiserver_port: '7777'
-               ,apiserver_ver : 'v1.0'
-               ,username: 'brunor'
-               ,app_id: 1               
+                apiserver_proto: 'http'
+               ,apiserver_host : 'localhost'
+               ,apiserver_port : '7777'
+               ,apiserver_ver  : 'v1.0'
+               ,username       : 'brunor'
+               ,app_id         : 1               
             };
             /*
              * Change variable below to change delay of check status loop
@@ -54,6 +55,7 @@
                 job_id          = jrec.id;
                 job_status      = jrec.status;
                 job_date        = jrec.date;
+                job_lastchange  = jrec.last_change;  
                 job_description = jrec.description;
                 out_files       = jrec.output_files;                
                 var OutFiles ='';
@@ -72,12 +74,12 @@
                         OutFiles+=
                             '<div class="row">'
                            +'  <div class="col-sm-3">'
-                           +'  <a href="http://'+webapp_settings.apiserver_host
-                                            +':'+webapp_settings.apiserver_port
-                                            +'/'+webapp_settings.apiserver_ver
-                                            +'/'
-                                            +out_files[j].url+'">'
-                                            +out_files[j].name+'</a>'
+                           +'  <a href="'+webapp_settings.apiserver_proto+'://'
+                                         +webapp_settings.apiserver_host +':'
+                                         +webapp_settings.apiserver_port +'/'
+                                         +webapp_settings.apiserver_ver  +'/'                                   
+                                         +out_files[j].url+'">'
+                                         +out_files[j].name+'</a>'
                            +'  </div>'
                            +'  <div class="col-sm-3">'
                            +'  </div>'
@@ -101,10 +103,11 @@
                         +'        <button id="job_btn'+job_id+'" class="btn btn-default btn-xs toggle">'
                         +'        <span class="glyphicon glyphicon-eye-open"></span>'
                         +'        </button>'
-                        +'	</td>'
+                        +'	</td>'                        
                         +'  <td>'+job_date+'</td>'
-                        +'	<td>'+job_status+'</td>'
-                        +'	<td>'+job_description+'</td>'			
+                        +'  <td>'+job_lastchange+'</td>'
+                        +'  <td>'+job_status+'</td>'
+                        +'  <td>'+job_description+'</td>'			
                         +'</tr>'
                         +'<tr class="tablesorter-childRow">' 
                         +'<td colspan="4">'
@@ -125,16 +128,20 @@
             function cleanJob(job_id) {                 
                 $.ajax({                     
                     type: "DELETE", 
-                    url: 'http://'+webapp_settings.apiserver_host+':'
-                                  +webapp_settings.apiserver_port+'/'
-                                  +webapp_settings.apiserver_ver +'/tasks/'+job_id, 
+                    url: webapp_settings.apiserver_proto+'://'
+                        +webapp_settings.apiserver_host+':'
+                        +webapp_settings.apiserver_port+'/'
+                        +webapp_settings.apiserver_ver +'/tasks/'+job_id, 
                     dataType: "json",                    
                     success: function(data) {
                             $('#confirmJobDel').hide();
                             $('#cancelJobDel').text('Continue');
                             $('#confirmDelete').find('.modal-body p').text('Successfully removed job');
                             $('#jobTable').find('#'+job_id).next().remove();
-                            $('#jobTable').find('#'+job_id).remove();
+                            console.log('getNumJobs(): '+getNumJobs());                                                                                    
+                            if(getNumJobs() > 0)  
+                                $('#jobTable').find('#'+job_id).remove();
+                            else emptyJobTable();
                         }, 
                     error: function(jqXHR, textStatus, errorThrown) {
                             alert(jqXHR.status);
@@ -148,7 +155,7 @@
                 var tableRows='';
                 for (var i = 0; i < data.length; i++) {
                     tableRows+=addJobRecord(i,data[i]);                                        
-                }
+                }                
                 jobsTable =
                  '<table id="jobTable" class="table table-responsive tablesorter">'
                 +'	<colgroup>'
@@ -156,11 +163,13 @@
                 +'		<col/>'
                 +'		<col/>'
                 +'		<col/>'	
+                +'		<col/>'	
                 +'	</colgroup>'
                 +'	<thead>'
                 +'           <tr>'
                 +'               <th></th>'
-                +'                <th>Date</th>'
+                +'                <th>Submitted</th>'
+                +'                <th>Modified</th>'
                 +'                <th>Status</th>'
                 +'                <th>Description</th>'			
                 +'            </tr>'
@@ -189,20 +198,31 @@
                 });                
             }
             /*
+             * Set empty job table             
+             */
+            function emptyJobTable() {
+                $('#jobsDiv').html('<small>No jobs available yet</small>');
+            }
+            /*
              * Calls the API Server to generate the Jobs table
              */
             function prepareJobTable() { 
                 $('#jobsDiv').html('');
+                $('#jobsDiv').attr('data-modify', 'false');
                 $.ajax({
                     type: "GET", 
-                    url: 'http://'+webapp_settings.apiserver_host+':'
-                                  +webapp_settings.apiserver_port+'/'
-                                  +webapp_settings.apiserver_ver +'/tasks?user='
-                                  +webapp_settings.username      +'&app_id='
-                                  +webapp_settings.app_id, 
+                    url:  webapp_settings.apiserver_proto+'://'
+                         +webapp_settings.apiserver_host +':'
+                         +webapp_settings.apiserver_port +'/'
+                         +webapp_settings.apiserver_ver  +'/tasks?user='
+                         +webapp_settings.username       +'&app_id='
+                         +webapp_settings.app_id, 
                     dataType: "json",                    
-                    success: function(data) {                                                        
-                            fillJobTable(data);                            
+                    success: function(data) {
+                            if(data.length>0)
+                                fillJobTable(data);
+                            else
+                                emptyJobTable();
                         }, 
                     error: function(jqXHR, textStatus, errorThrown) {
                             alert(jqXHR.status);
@@ -213,7 +233,7 @@
              * Helper function returnin the number of jobs
              */
             function getNumJobs() {
-                return ($('#jobTable tr').size()-1)/2;
+                return  Math.floor(($('#jobTable tr').size()-1)/2);
             }
             /*
              * Function responsible of job submission
@@ -233,10 +253,11 @@
                 $('#modal-content').html('');
                 // 1st call to register job                
                 $.ajax({
-                    url: 'http://'+webapp_settings.apiserver_host+':'
-                                  +webapp_settings.apiserver_port+'/'
-                                  +webapp_settings.apiserver_ver +'/tasks?user='
-                                  +webapp_settings.username,                            
+                    url:  webapp_settings.apiserver_proto+'://'
+                         +webapp_settings.apiserver_host+':'
+                         +webapp_settings.apiserver_port+'/'
+                         +webapp_settings.apiserver_ver +'/tasks?user='
+                         +webapp_settings.username,                            
                     type: "POST", 
                     cache: false,
                     dataType: "json",
@@ -245,10 +266,11 @@
                     success: function(data) {
                             // 2nd call finalize and start submission                                                        
                             $.ajax({
-                                url: 'http://'+webapp_settings.apiserver_host+':'
-                                              +webapp_settings.apiserver_port+'/'
-                                              +webapp_settings.apiserver_ver +'/tasks/'+data.id+'/input?user='
-                                              +webapp_settings.username,                                              
+                                url: webapp_settings.apiserver_proto+'://'
+                                    +webapp_settings.apiserver_host+':'
+                                    +webapp_settings.apiserver_port+'/'
+                                    +webapp_settings.apiserver_ver +'/tasks/'+data.id+'/input?user='
+                                    +webapp_settings.username,                                              
                                 type: "POST", 
                                 cache: false,
                                 dataType: "json",
@@ -278,34 +300,39 @@
                     if(   i>0                  // Starting after thead
                        && i%2!=0               // Consider only odd rows (no childs)
                       ) {                      // Consider only active states                        
-                       status=row.cells[2].innerHTML;                       
-                       if(    status != 'DONE'     
-                          &&  status != 'FAILED'
-                          &&  status != 'ABORT')                                                  
+                       jstatus=row.cells[3].innerHTML;                       
+                       if(    jstatus != 'DONE'     
+                          &&  jstatus != 'FAILED'
+                          &&  jstatus != 'ABORT')                                                  
                             $.ajax({
-                                    url: 'http://'+webapp_settings.apiserver_host+':'
-                                                  +webapp_settings.apiserver_port+'/'
-                                                  +webapp_settings.apiserver_ver +'/tasks/'+row.id+'?user='
-                                                  +webapp_settings.username,                                                            
+                                    url: webapp_settings.apiserver_proto+'://'
+                                        +webapp_settings.apiserver_host+':'
+                                        +webapp_settings.apiserver_port+'/'
+                                        +webapp_settings.apiserver_ver +'/tasks/'+row.id+'?user='
+                                        +webapp_settings.username,                                                            
                                     type: "GET", 
                                     cache: false,                                
                                     contentType: "application/json; charset=utf-8",                                
-                                    success: function(data) {                                      
-                                        if(data.status == 'DONE')
-                                            prepareJobTable();
-                                        else
-                                            $('#'+data.id).find("td").eq(2).html(data.status);
-                                        }, 
+                                    success: function(data) {
+                                        jstatus=$('#'+data.id).find("td").eq(3).html();
+                                        if(jstatus != data.jstatus) {
+                                            console.log("change detected: "+jstatus+"->"+data.status);
+                                            if(data.status == 'DONE')
+                                                prepareJobTable();
+                                            else 
+                                                $('#'+data.id).find("td").eq(3).html(data.status);                                          
+                                            $('#jobsDiv').attr('data-modify', 'true');
+                                        }
+                                    }, 
                                     error: function(jqXHR, textStatus, errorThrown) {
                                             console.log(jqXHR.status);
-                                        }
+                                    }
                                 });
                         }
                 });                
                 // Set timeout again for the next loop
                 setTimeout(checkJobs, TimerDelay);
-            }
-            
+            }            
             /*
              * Function that opens the submit modal frame
              */
@@ -371,7 +398,7 @@
         </button>
         <hr>
         <!-- Submit record table (begin) -->    
-        <div id="jobsDiv"> 
+        <div id="jobsDiv" data-modify="false"> 
         </div>        
         
         <!-- Submit record table (end) -->
@@ -409,8 +436,7 @@
           </div>
         </div>   
         <!-- Modal (end) -->
-        <!-- Confirm Modal Dialog (begin) -->
-                       
+        <!-- Confirm Modal Dialog (begin) -->                       
         <div class="modal fade" id="confirmDelete" role="dialog" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
           <div class="modal-dialog">
             <div class="modal-content">
