@@ -39,11 +39,23 @@
             var webapp_settings = {
                 apiserver_proto: 'http'
                ,apiserver_host : 'localhost'
-               ,apiserver_port : '7777'
+               ,apiserver_port : '8888'
+               ,apiserver_path : ''
                ,apiserver_ver  : 'v1.0'
                ,username       : 'brunor'
                ,app_id         : 1               
             };
+            /* Settings for sgw.indigo-datacloud.eu
+            var webapp_settings = {
+                apiserver_proto: 'https'
+               ,apiserver_host : 'sgw.indigo-datacloud.eu'
+               ,apiserver_port : '443'
+               ,apiserver_path : '/apis'
+               ,apiserver_ver  : 'v1.0'
+               ,username       : 'brunor'
+               ,app_id         : 1
+            };
+            */
             /*
              * Change variable below to change delay of check status loop
              */
@@ -76,7 +88,8 @@
                            +'  <div class="col-sm-3">'
                            +'  <a href="'+webapp_settings.apiserver_proto+'://'
                                          +webapp_settings.apiserver_host +':'
-                                         +webapp_settings.apiserver_port +'/'
+                                         +webapp_settings.apiserver_port 
+                                         +webapp_settings.apiserver_path +'/'
                                          +webapp_settings.apiserver_ver  +'/'                                   
                                          +out_files[j].url+'">'
                                          +out_files[j].name+'</a>'
@@ -129,9 +142,10 @@
                 $.ajax({                     
                     type: "DELETE", 
                     url: webapp_settings.apiserver_proto+'://'
-                        +webapp_settings.apiserver_host+':'
-                        +webapp_settings.apiserver_port+'/'
-                        +webapp_settings.apiserver_ver +'/tasks/'+job_id, 
+                        +webapp_settings.apiserver_host +':'
+                        +webapp_settings.apiserver_port
+                        +webapp_settings.apiserver_path +'/'
+                        +webapp_settings.apiserver_ver  +'/tasks/'+job_id, 
                     dataType: "json",                    
                     success: function(data) {
                             $('#confirmJobDel').hide();
@@ -213,9 +227,10 @@
                     type: "GET", 
                     url:  webapp_settings.apiserver_proto+'://'
                          +webapp_settings.apiserver_host +':'
-                         +webapp_settings.apiserver_port +'/'
+                         +webapp_settings.apiserver_port 
+                         +webapp_settings.apiserver_path +'/'
                          +webapp_settings.apiserver_ver  +'/tasks?user='
-                         +webapp_settings.username       +'&app_id='
+                         +webapp_settings.username       +'&application='
                          +webapp_settings.app_id, 
                     dataType: "json",                    
                     success: function(data) {
@@ -254,8 +269,9 @@
                 // 1st call to register job                
                 $.ajax({
                     url:  webapp_settings.apiserver_proto+'://'
-                         +webapp_settings.apiserver_host+':'
-                         +webapp_settings.apiserver_port+'/'
+                         +webapp_settings.apiserver_host +':'
+                         +webapp_settings.apiserver_port 
+                         +webapp_settings.apiserver_path +'/'
                          +webapp_settings.apiserver_ver +'/tasks?user='
                          +webapp_settings.username,                            
                     type: "POST", 
@@ -267,8 +283,9 @@
                             // 2nd call finalize and start submission                                                        
                             $.ajax({
                                 url: webapp_settings.apiserver_proto+'://'
-                                    +webapp_settings.apiserver_host+':'
-                                    +webapp_settings.apiserver_port+'/'
+                                    +webapp_settings.apiserver_host +':'
+                                    +webapp_settings.apiserver_port 
+                                    +webapp_settings.apiserver_path +'/'
                                     +webapp_settings.apiserver_ver +'/tasks/'+data.id+'/input?user='
                                     +webapp_settings.username,                                              
                                 type: "POST", 
@@ -306,8 +323,9 @@
                           &&  jstatus != 'ABORT')                                                  
                             $.ajax({
                                     url: webapp_settings.apiserver_proto+'://'
-                                        +webapp_settings.apiserver_host+':'
-                                        +webapp_settings.apiserver_port+'/'
+                                        +webapp_settings.apiserver_host +':'
+                                        +webapp_settings.apiserver_port 
+                                        +webapp_settings.apiserver_path +'/'
                                         +webapp_settings.apiserver_ver +'/tasks/'+row.id+'?user='
                                         +webapp_settings.username,                                                            
                                     type: "GET", 
@@ -365,8 +383,8 @@
             /*
              * Page initialization
              */
-            $( document ).ready(function() {  
-                    $('#confirmDelete').on('show.bs.modal', function (e) {
+            $(document).ready(function() {
+                $('#confirmDelete').on('show.bs.modal', function (e) {
                     $message = $(e.relatedTarget).attr('data-message');
                     $(this).find('.modal-body p').text($message);
                     $title = $(e.relatedTarget).attr('data-title');
@@ -390,7 +408,7 @@
         <div class="panel panel-default">
         <div class="panel-heading"><h3> HelloTester web application </h3></div>
         <div class="panel-body"> 
-            <p>This is the simpler application
+            <p>This is the simplest application
                  making use of FutureGateway REST APIs. It executes a simple '/bin/hostname'
         command into a remote machine belonging to a distributed infrastructure. In this particular case the execution will be done through the SSH JSAGA adaptor.</p>
         <button type="button" class="btn btn-primary btn-lg" id="openmodal" onClick="openModal()">
@@ -448,13 +466,14 @@
                   <p></p>
               </div>                
                 <div id="job_id" class='job_id' data-name='job_id' data-value=''/>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal" id="cancelJobDel">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmJobDel">Delete</button>
+                  <div class="modal-footer">
+                  <button type="button" class="btn btn-default" data-dismiss="modal" id="cancelJobDel">Cancel</button>
+                  <button type="button" class="btn btn-danger" id="confirmJobDel">Delete</button>
+                  </div>
               </div>
             </div>
           </div>
         </div>
-        <!-- Confirm Modal Dialog (end) -->
+        <!-- Confirm Modal Dialog (end) --> 
     </body>    
 </html>
